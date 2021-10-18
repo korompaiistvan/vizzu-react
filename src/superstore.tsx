@@ -1,10 +1,10 @@
 import * as d3 from "d3-fetch";
 import { Data } from "vizzu/dist/vizzu";
-import { writeFileSync } from "fs";
 
-const superstoreData = d3
-  .csv(process.env.PUBLIC_URL + "superstore.csv")
-  .then((data) => {
+export function getSuperstoreDataset(
+  setDataSet: React.Dispatch<React.SetStateAction<Data.Set | undefined>>
+) {
+  d3.csv(process.env.PUBLIC_URL + "superstore.csv").then((data) => {
     const metaData = {
       numbers: ["Sales", "Quantity", "Discount", "Profit"],
     };
@@ -22,5 +22,6 @@ const superstoreData = d3
         };
       }),
     };
-    writeFileSync("superstore.json", JSON.stringify(vizzuData));
+    setDataSet(vizzuData as Data.Set);
   });
+}

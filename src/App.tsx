@@ -6,11 +6,11 @@ import {
   useState,
   useLayoutEffect,
 } from "react";
-import * as d3 from "d3-fetch";
 import { Data } from "vizzu/dist/vizzu";
 import { configContext, configDispatchContext } from "./context";
 import { chartDescriptorReducer } from "./reducer";
 import { initialConfig } from "./initial_config";
+import { getSuperstoreDataset } from "./superstore";
 
 function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -42,29 +42,10 @@ function App() {
 
   // also read the data in before the first paint
   useEffect(() => {
-    d3.csv(process.env.PUBLIC_URL + "superstore.csv").then((data) => {
-      const metaData = {
-        numbers: ["Sales", "Quantity", "Discount", "Profit"],
-      };
-      let vizzuData = {
-        series: Object.keys(data[0]).map((col) => {
-          return {
-            name: col,
-            values: data.map((record) => {
-              let value: number | string = record[col]!;
-              if (metaData.numbers.includes(col)) {
-                value = +value as number;
-              }
-              return value;
-            }),
-          };
-        }),
-      };
-      setDataSet(vizzuData as Data.Set);
-    });
+    getSuperstoreDataset(setDataSet);
   }, []);
 
-  // whenever the dataset or the config changes
+  // whenever the dataset or the config changes, animate the chart
   useEffect(() => {
     console.log("React has noticed the change");
     if (!chartRef.current) {
