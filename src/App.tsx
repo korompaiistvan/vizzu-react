@@ -11,12 +11,14 @@ import { configContext, configDispatchContext } from "./context";
 import { chartDescriptorReducer } from "./reducer";
 import { initialConfig } from "./initial_config";
 import { getSuperstoreDataset } from "./superstore";
+import ChannelSelector from "./components/ChannelSelector";
+import { ChannelName } from "./types";
 
-function App() {
+const dataSet = function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const chartRef = useRef<Vizzu>();
   // const animRef = useRef<Promise<Vizzu>>();
-  const [dataSet, setDataSet] = useState<Data.Set>();
+  const datasetRef = useRef<Data.TableBySeries>();
   const [chartConfig, dispatchChartConfig] = useReducer(
     chartDescriptorReducer,
     initialConfig
@@ -42,7 +44,13 @@ function App() {
 
   // also read the data in before the first paint
   useEffect(() => {
-    getSuperstoreDataset(setDataSet);
+    datasetRef.current = getSuperstoreDataset();
+    if (!chartRef.current) {
+      console.error("data was loaded but no chart yet");
+      // the canvas has not been mounted yet
+      return;
+    }
+    chartRef.current.animate({ data: datasetRef.current, config: chartConfig });
   }, []);
 
   // whenever the dataset or the config changes, animate the chart
@@ -53,13 +61,13 @@ function App() {
       // the canvas has not been mounted yet
       return;
     }
-    if (!dataSet) {
+    if (!datasetRef.current) {
       console.warn("The data hasn't loaded yet");
       return;
     }
     console.log("drawing with", chartConfig);
-    chartRef.current.animate({ data: dataSet, config: chartConfig });
-  }, [chartConfig, dataSet]);
+    chartRef.current.animate({ config: chartConfig });
+  }, [chartConfig]);
 
   const gridStyle = {
     display: "grid",
@@ -74,15 +82,13 @@ function App() {
         <div className="main" style={gridStyle}>
           {Object.keys(chartConfig.channels!).map((variableName, idx) => {
             return (
-              <div
-                style={{
-                  gridRow: `${1 + idx * 2} / span 2`,
-                  gridColumn: "1 / 1",
-                }}
-                key={variableName}
-              >
-                {variableName}
-              </div>
+              datasetRef.current && (
+                <ChannelSelector
+                  channelName={variableName as ChannelName}
+                  seriesList={datasetRef.current!.series.map((s) => s.name)}
+                  key={variableName}
+                />
+              )
             );
           })}
 
@@ -118,6 +124,6 @@ function App() {
       </configContext.Provider>
     </configDispatchContext.Provider>
   );
-}
+};
 
 export default App;

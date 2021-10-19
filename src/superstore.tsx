@@ -1,9 +1,9 @@
 import * as d3 from "d3-fetch";
 import { Data } from "vizzu/dist/vizzu";
+import { MutableRefObject } from "react";
 
-export function getSuperstoreDataset(
-  setDataSet: React.Dispatch<React.SetStateAction<Data.Set | undefined>>
-) {
+export function getSuperstoreDataset() {
+  let dataSet;
   d3.csv(process.env.PUBLIC_URL + "superstore.csv").then((data) => {
     const metaData = {
       numbers: ["Sales", "Quantity", "Discount", "Profit"],
@@ -22,6 +22,8 @@ export function getSuperstoreDataset(
         };
       }),
     };
-    setDataSet(vizzuData as Data.Set);
+    dataSet = vizzuData as Data.TableBySeries;
   });
+  console.log(dataSet);
+  return dataSet;
 }

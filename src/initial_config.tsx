@@ -1,8 +1,8 @@
 import { FullConfig } from "./types";
 export const initialConfig = {
   channels: {
-    x: "Region",
-    y: "Sales",
+    x: ["Region"],
+    y: ["Sales"],
     color: null,
     lightness: null,
     size: null,

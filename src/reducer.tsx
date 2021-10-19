@@ -7,8 +7,10 @@ export function chartDescriptorReducer(
   let newConfig = config;
   switch (action.type) {
     case "channel":
-      newConfig.channels![action.channel] = action.selection;
-      return newConfig;
+      const updatedChannels = config.channels;
+      updatedChannels[action.channel] = action.selection;
+      console.log("setting the new channel config");
+      return { ...config };
     case "chart":
       switch (action.setting) {
         case "title":

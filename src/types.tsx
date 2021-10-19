@@ -16,3 +16,5 @@ export type NoOptional<Type> = {
   [Property in keyof Type]-?: Type[Property];
 };
 export type FullConfig = NoOptional<Config.Chart>;
+
+export type ChannelName = keyof Config.Channels;
