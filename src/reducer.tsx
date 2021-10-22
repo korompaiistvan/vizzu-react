@@ -1,64 +1,65 @@
-import { FullConfig, Action } from "./types";
+import { Action, AppState } from "./types";
 
-export function chartDescriptorReducer(
-  config: FullConfig,
-  action: Action
-): FullConfig {
-  let newConfig = config;
+export function reducer(state: AppState, action: Action): AppState {
+  let newState = JSON.parse(JSON.stringify(state));
   switch (action.type) {
+    case "dataUpdate":
+      newState.dataset = action.data;
+      console.log("data should have updated in state just now");
+      return newState;
     case "channel":
-      const updatedChannels = config.channels;
-      updatedChannels[action.channel] = action.selection;
-      console.log("setting the new channel config");
-      return { ...config };
+      newState.chartConfig.channels[action.channel] = action.selection;
+      return newState;
     case "chart":
       switch (action.setting) {
         case "title":
-          newConfig.title = action.value as string;
-          return newConfig;
+          newState.chartConfig.title = action.value as string;
+          return newState;
         case "legend":
-          newConfig.legend = action.value as
+          newState.chartConfig.legend = action.value as
             | "color"
             | "lightness"
             | "size"
             | null;
-          return newConfig;
+          return newState;
         case "coordSystem":
-          newConfig.coordSystem = action.value as "cartesian" | "polar";
-          return newConfig;
+          newState.chartConfig.coordSystem = action.value as
+            | "cartesian"
+            | "polar";
+          return newState;
         case "geometry":
-          newConfig.geometry = action.value as
+          newState.chartConfig.geometry = action.value as
             | "rectangle"
             | "circle"
             | "area"
             | "line";
-          return newConfig;
+          return newState;
         case "orientation":
-          newConfig.orientation = action.value as "horizontal" | "vertical";
-          console.log(config);
-          console.log(newConfig);
-          return newConfig;
+          newState.chartConfig.orientation = action.value as
+            | "horizontal"
+            | "vertical";
+          return newState;
         case "sort":
-          newConfig.title = action.value as "none" | "byValue";
-          return newConfig;
+          newState.chartConfig.sort = action.value as "none" | "byValue";
+          return newState;
         case "reverse":
-          newConfig.reverse = action.value as boolean;
-          return newConfig;
+          newState.chartConfig.reverse = action.value as boolean;
+          return newState;
         case "align":
-          newConfig.align = action.value as
+          newState.chartConfig.align = action.value as
             | "none"
             | "min"
             | "center"
             | "max"
             | "stretch";
-          return newConfig;
+          return newState;
         case "split":
-          newConfig.split = action.value as boolean;
-          return newConfig;
+          newState.chartConfig.split = action.value as boolean;
+          return newState;
         default:
-          return newConfig;
+          return newState;
       }
     default:
-      return newConfig;
+      return newState;
   }
 }

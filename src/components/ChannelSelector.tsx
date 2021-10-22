@@ -1,14 +1,14 @@
 import { useContext } from "react";
-import { useTheme } from "@mui/material/styles";
-import Box from "@mui/material/Box";
-import OutlinedInput from "@mui/material/OutlinedInput";
+// import { useTheme } from "@mui/material/styles";
+// import Box from "@mui/material/Box";
+// import OutlinedInput from "@mui/material/OutlinedInput";
 import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
+// import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
-import Chip from "@mui/material/Chip";
+// import Chip from "@mui/material/Chip";
 import { ChannelName } from "../types";
-import { configContext, configDispatchContext } from "../context";
+import { stateContext, dispatchContext } from "../context";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -27,9 +27,9 @@ interface Props {
 }
 
 export default function ChannelSelector(props: Props) {
-  const chartConfig = useContext(configContext);
-  const dispatchChartConfig = useContext(configDispatchContext);
-  const theme = useTheme();
+  const state = useContext(stateContext);
+  const dispatch = useContext(dispatchContext);
+  // const theme = useTheme();
 
   const handleChange = (event: any) => {
     const { options } = event.target;
@@ -40,19 +40,21 @@ export default function ChannelSelector(props: Props) {
       }
     }
     console.log(selection);
-    dispatchChartConfig({
+    dispatch({
       type: "channel",
       channel: props.channelName,
       selection,
     });
-    console.log(chartConfig.channels[props.channelName]);
+    console.log(state.chartConfig.channels[props.channelName]);
   };
 
   let selectedValues: string[];
-  if (typeof chartConfig.channels[props.channelName] === "string") {
-    selectedValues = [chartConfig.channels[props.channelName]] as string[];
-  } else if (chartConfig.channels[props.channelName] !== null) {
-    selectedValues = chartConfig.channels[props.channelName] as string[];
+  if (typeof state.chartConfig.channels[props.channelName] === "string") {
+    selectedValues = [
+      state.chartConfig.channels[props.channelName],
+    ] as string[];
+  } else if (state.chartConfig.channels[props.channelName] !== null) {
+    selectedValues = state.chartConfig.channels[props.channelName] as string[];
   } else {
     selectedValues = [] as string[];
   }

@@ -6,68 +6,81 @@ import {
   useState,
   useLayoutEffect,
 } from "react";
-import { Data } from "vizzu/dist/vizzu";
-import { configContext, configDispatchContext } from "./context";
-import { chartDescriptorReducer } from "./reducer";
-import { initialConfig } from "./initial_config";
+import { stateContext, dispatchContext } from "./context";
+import { reducer } from "./reducer";
+import { initialState } from "./initialState";
 import { getSuperstoreDataset } from "./superstore";
 import ChannelSelector from "./components/ChannelSelector";
 import { ChannelName } from "./types";
 
-const dataSet = function App() {
+function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const chartRef = useRef<Vizzu>();
-  // const animRef = useRef<Promise<Vizzu>>();
-  const datasetRef = useRef<Data.TableBySeries>();
-  const [chartConfig, dispatchChartConfig] = useReducer(
-    chartDescriptorReducer,
-    initialConfig
-  );
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const [datasetIsLoading, setDatasetIsLoading] = useState<boolean>(true);
 
   // first set up the chart reference
   useLayoutEffect(() => {
+    console.log("useLayoutEffect");
     if (!canvasRef.current) {
-      console.error("There is no canvas to draw on! (yet?)");
+      console.error("  There is no canvas to draw on! (yet?)");
       return;
     }
 
     if (chartRef.current) {
       console.log(
-        "Vizzu already initialized. You probably hot-reloaded the page."
+        "  Vizzu already initialized. You probably hot-reloaded the page."
       );
       return;
     }
 
     chartRef.current = new Vizzu(canvasRef.current);
-    console.log(chartRef.current);
   }, []);
 
-  // also read the data in before the first paint
   useEffect(() => {
-    datasetRef.current = getSuperstoreDataset();
-    if (!chartRef.current) {
-      console.error("data was loaded but no chart yet");
-      // the canvas has not been mounted yet
-      return;
-    }
-    chartRef.current.animate({ data: datasetRef.current, config: chartConfig });
+    console.log("first useeffect");
+    getSuperstoreDataset().then((data) => {
+      dispatch({ type: "dataUpdate", data });
+    });
   }, []);
 
-  // whenever the dataset or the config changes, animate the chart
   useEffect(() => {
-    console.log("React has noticed the change");
+    console.log("second useffect", datasetIsLoading, state);
+    if (!datasetIsLoading) {
+      return;
+    }
+
     if (!chartRef.current) {
-      console.warn("there is no chart yet");
-      // the canvas has not been mounted yet
+      console.error("  no chart yet");
       return;
     }
-    if (!datasetRef.current) {
-      console.warn("The data hasn't loaded yet");
+    if (!state.dataset.series.length) {
+      console.error("  data was not loaded yet");
       return;
     }
-    console.log("drawing with", chartConfig);
-    chartRef.current.animate({ config: chartConfig });
-  }, [chartConfig]);
+
+    chartRef.current.animate({
+      data: state.dataset,
+      config: state.chartConfig,
+    });
+    setDatasetIsLoading(false);
+  }, [state, datasetIsLoading]);
+
+  useEffect(() => {
+    console.log("third useffect", state);
+    if (datasetIsLoading) {
+      console.log("  dataset is still loading");
+      return;
+    }
+    if (!chartRef.current) {
+      console.error("  no chart yet");
+      return;
+    }
+
+    chartRef.current.animate({
+      config: state.chartConfig,
+    });
+  }, [state]);
 
   const gridStyle = {
     display: "grid",
@@ -76,41 +89,45 @@ const dataSet = function App() {
     height: "100vh",
   };
 
+  const seriesList = state.dataset.series.map((s) => s.name);
+  const channelList = Object.keys(state.chartConfig.channels);
+  const chartSettingsList = Object.keys(state.chartConfig).filter(
+    (k) => k !== "channels"
+  );
+
   return (
-    <configDispatchContext.Provider value={dispatchChartConfig}>
-      <configContext.Provider value={chartConfig}>
+    <dispatchContext.Provider value={dispatch}>
+      <stateContext.Provider value={state}>
         <div className="main" style={gridStyle}>
-          {Object.keys(chartConfig.channels!).map((variableName, idx) => {
+          {channelList.map((variableName) => {
             return (
-              datasetRef.current && (
+              !datasetIsLoading && (
                 <ChannelSelector
                   channelName={variableName as ChannelName}
-                  seriesList={datasetRef.current!.series.map((s) => s.name)}
+                  seriesList={seriesList}
                   key={variableName}
                 />
               )
             );
           })}
 
-          {Object.keys(chartConfig)
-            .filter((k) => k !== "channels")
-            .map((setting, idx) => {
-              return (
-                <div
-                  style={{ gridRow: `1/1`, gridColumn: `${2 + idx} / span 1` }}
-                  key={setting}
-                  onClick={() =>
-                    dispatchChartConfig({
-                      type: "chart",
-                      setting: "orientation",
-                      value: "vertical",
-                    })
-                  }
-                >
-                  {setting}
-                </div>
-              );
-            })}
+          {chartSettingsList.map((setting, idx) => {
+            return (
+              <div
+                style={{ gridRow: `1/1`, gridColumn: `${2 + idx} / span 1` }}
+                key={setting}
+                onClick={() =>
+                  dispatch({
+                    type: "chart",
+                    setting: "orientation",
+                    value: "vertical",
+                  })
+                }
+              >
+                {setting}
+              </div>
+            );
+          })}
           <canvas
             ref={canvasRef}
             style={{
@@ -121,9 +138,9 @@ const dataSet = function App() {
             }}
           />
         </div>
-      </configContext.Provider>
-    </configDispatchContext.Provider>
+      </stateContext.Provider>
+    </dispatchContext.Provider>
   );
-};
+}
 
 export default App;
