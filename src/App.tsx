@@ -21,7 +21,7 @@ function App() {
 
   // first set up the chart reference
   useLayoutEffect(() => {
-    console.log("useLayoutEffect");
+    // console.log("useLayoutEffect");
     if (!canvasRef.current) {
       console.error("  There is no canvas to draw on! (yet?)");
       return;
@@ -38,14 +38,14 @@ function App() {
   }, []);
 
   useEffect(() => {
-    console.log("first useeffect");
+    // console.log("first useeffect");
     getSuperstoreDataset().then((data) => {
       dispatch({ type: "dataUpdate", data });
     });
   }, []);
 
   useEffect(() => {
-    console.log("second useffect", datasetIsLoading, state);
+    // console.log("second useffect", datasetIsLoading, state);
     if (!datasetIsLoading) {
       return;
     }
@@ -61,13 +61,13 @@ function App() {
 
     chartRef.current.animate({
       data: state.dataset,
-      config: state.chartConfig,
+      config: JSON.parse(JSON.stringify(state.chartConfig)),
     });
     setDatasetIsLoading(false);
   }, [state, datasetIsLoading]);
 
   useEffect(() => {
-    console.log("third useffect", state);
+    // console.log("third useffect", state);
     if (datasetIsLoading) {
       console.log("  dataset is still loading");
       return;
@@ -78,15 +78,16 @@ function App() {
     }
 
     chartRef.current.animate({
-      config: state.chartConfig,
+      config: JSON.parse(JSON.stringify(state.chartConfig)),
     });
-  }, [state]);
+  }, [state, datasetIsLoading]);
 
   const gridStyle = {
     display: "grid",
     gridTemplateColumns: "160px repeat(9, 1fr)",
     gridTemplateRows: "repeat(14, 1fr)",
     height: "100vh",
+    gridGap: "20px",
   };
 
   const seriesList = state.dataset.series.map((s) => s.name);
@@ -114,7 +115,10 @@ function App() {
           {chartSettingsList.map((setting, idx) => {
             return (
               <div
-                style={{ gridRow: `1/1`, gridColumn: `${2 + idx} / span 1` }}
+                style={{
+                  gridRow: `1/1`,
+                  gridColumn: `${2 + idx} / span 1`,
+                }}
                 key={setting}
                 onClick={() =>
                   dispatch({
@@ -124,7 +128,7 @@ function App() {
                   })
                 }
               >
-                {setting}
+                {setting} control <br /> placeholder
               </div>
             );
           })}

@@ -1,12 +1,12 @@
 import { useContext } from "react";
 // import { useTheme } from "@mui/material/styles";
-// import Box from "@mui/material/Box";
-// import OutlinedInput from "@mui/material/OutlinedInput";
+import Box from "@mui/material/Box";
+import OutlinedInput from "@mui/material/OutlinedInput";
 import InputLabel from "@mui/material/InputLabel";
-// import MenuItem from "@mui/material/MenuItem";
+import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
-// import Chip from "@mui/material/Chip";
+import Chip from "@mui/material/Chip";
 import { ChannelName } from "../types";
 import { stateContext, dispatchContext } from "../context";
 
@@ -32,14 +32,7 @@ export default function ChannelSelector(props: Props) {
   // const theme = useTheme();
 
   const handleChange = (event: any) => {
-    const { options } = event.target;
-    const selection: string[] = [];
-    for (let i = 0, l = options.length; i < l; i += 1) {
-      if (options[i].selected) {
-        selection.push(options[i].value);
-      }
-    }
-    console.log(selection);
+    const selection: string[] = event.target.value;
     dispatch({
       type: "channel",
       channel: props.channelName,
@@ -61,37 +54,39 @@ export default function ChannelSelector(props: Props) {
 
   return (
     <div>
-      <FormControl sx={{ m: 1, width: 300 }}>
+      <FormControl sx={{ m: 1, width: "160px" }}>
         <InputLabel id="demo-multiple-chip-label">
           {props.channelName}
         </InputLabel>
         <Select
           multiple
-          native
           value={selectedValues as string[]}
           onChange={handleChange}
-          inputProps={{
-            id: "select-multiple-native",
+          input={
+            <OutlinedInput
+              id={`select${props.channelName}`}
+              label={props.channelName}
+            />
+          }
+          renderValue={(selected) => {
+            if (!selected) {
+              return;
+            }
+            console.log("selected", selected);
+            return (
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                {selected.map((value) => (
+                  <Chip key={value} label={value} />
+                ))}
+              </Box>
+            );
           }}
-          // renderValue={(selected) => {
-          //   console.log(props.channelName, selected);
-          //   if (!selected) {
-          //     return;
-          //   }
-          //   return (
-          //     <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-          //       {selected.map((value) => (
-          //         <Chip key={value} label={value} />
-          //       ))}
-          //     </Box>
-          //   );
-          // }}
           MenuProps={MenuProps}
         >
-          {props.seriesList.map((name) => (
-            <option key={name} value={name}>
-              {name}
-            </option>
+          {props.seriesList.map((series) => (
+            <MenuItem key={series} value={series}>
+              {series}
+            </MenuItem>
           ))}
         </Select>
       </FormControl>

@@ -6,9 +6,11 @@ export function reducer(state: AppState, action: Action): AppState {
     case "dataUpdate":
       newState.dataset = action.data;
       console.log("data should have updated in state just now");
+      console.log(newState);
       return newState;
     case "channel":
       newState.chartConfig.channels[action.channel] = action.selection;
+      console.log(action, newState);
       return newState;
     case "chart":
       switch (action.setting) {

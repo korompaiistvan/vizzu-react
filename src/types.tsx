@@ -18,10 +18,10 @@ export type Action = ChannelAction | ChartAction | DataUpdateAction;
 export type NoOptional<Type> = {
   [Property in keyof Type]-?: Type[Property];
 };
-export type FullConfig = NoOptional<Config.Chart>;
 
 export type ChannelName = keyof Config.Channels;
 
+export type FullConfig = NoOptional<Config.Chart>;
 export interface AppState {
   chartConfig: FullConfig;
   dataset: Data.TableBySeries;
